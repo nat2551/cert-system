@@ -3,735 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบดาวน์โหลดเกียรติบัตรออนไลน์ - สถาบันการอาชีวศึกษา</title>
-    <!-- Tailwind CSS -->
+    <title>ระบบค้นหาและดาวน์โหลดเกียรติบัตรออนไลน์</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts (Sarabun & Prompt) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- jsPDF for PDF Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
-                            dark: '#0f172a'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Prompt', 'Sarabun', 'sans-serif'],
-                        sarabun: ['Sarabun', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            font-family: 'Prompt', sans-serif;
-            background-color: #0b1329;
-            color: #f1f5f9;
-        }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1e3a8a;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #2563eb;
-        }
-        .cert-canvas-container {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
-        }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Sarabun', sans-serif; background-color: #0f172a; color: #f8fafc; }</style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
-
-    <!-- Header Navigation -->
-    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="goToStep(1)">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-blue-400 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/30">
-                    <i class="fa-solid font-award"></i>
-                    <i class="fa-solid fa-award"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-none text-white">CertiSystem</h1>
-                    <p class="text-xs text-slate-400">ระบบเกียรติบัตรออนไลน์ส่วนกลาง</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center space-x-3">
-                <button onclick="copyShareLink()" class="text-xs bg-brand-600 hover:bg-brand-500 text-white px-3 py-2 rounded-lg border border-brand-500 transition flex items-center gap-2 font-medium shadow-md">
-                    <i class="fa-solid fa-share-nodes"></i>
-                    <span>คัดลอกลิงก์แชร์ระบบ</span>
-                </button>
-                <button onclick="toggleAdminDrawer()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 rounded-lg border border-slate-700 transition flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-brand-500"></i>
-                    <span>จัดการข้อมูล / เทมเพลต</span>
-                </button>
-            </div>
+<body class="min-h-screen flex flex-col justify-between">
+    <header class="bg-slate-800 border-b border-slate-700 p-4">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-amber-400"><i class="fa-solid fa-award mr-2"></i>ระบบดาวน์โหลดเกียรติบัตร</h1>
+            <button onclick="document.getElementById('adminModal').classList.remove('hidden')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-sm"><i class="fa-solid fa-gear"></i> จัดการข้อมูล</button>
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-8">
-        <div class="w-full max-w-5xl">
-
-            <!-- STEP 1: Search Form -->
-            <div id="step-1" class="transition-all duration-300">
-                <div class="text-center mb-8">
-                    <span class="bg-brand-500/10 text-brand-400 text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-500/20 inline-block mb-3">
-                        <i class="fa-solid fa-graduation-cap mr-1"></i> สำหรับนักเรียน นักศึกษา
-                    </span>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">ดาวน์โหลดเกียรติบัตรการเข้าร่วมอบรม</h2>
-                    <p class="text-slate-400 mt-2 text-sm sm:text-base max-w-xl mx-auto">กรอกรหัสนักเรียนนักศึกษา และเลือกชมรมวิชาชีพเพื่อค้นหาและดาวน์โหลดเกียรติบัตรของคุณ</p>
+    <main class="max-w-2xl mx-auto w-full p-4 flex-grow my-auto">
+        <div id="searchCard" class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl space-y-4">
+            <h2 class="text-2xl font-bold text-center text-emerald-400">ค้นหาเกียรติบัตร</h2>
+            <form onsubmit="handleSearch(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm mb-1 text-slate-300">รหัสนักเรียน / นักศึกษา</label>
+                    <input type="text" id="studentId" required placeholder="เช่น 65301010001" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-emerald-500">
                 </div>
-
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl max-w-xl mx-auto relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-600 via-blue-400 to-indigo-600"></div>
-
-                    <form id="search-form" onsubmit="handleSearch(event)" class="space-y-6">
-                        <!-- Student ID Field -->
-                        <div>
-                            <label for="student-id" class="block text-sm font-medium text-slate-300 mb-2">
-                                <i class="fa-solid fa-id-card text-brand-500 mr-1.5"></i> รหัสนักเรียนนักศึกษา
-                            </label>
-                            <input 
-                                type="text" 
-                                id="student-id" 
-                                required
-                                placeholder="เช่น 65301010001" 
-                                class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition text-lg tracking-wider"
-                            />
-                            <p class="text-xs text-slate-500 mt-1.5">ป้อนรหัสนักศึกษาตามที่ลงทะเบียนไว้กับทางวิทยาลัย</p>
-                        </div>
-
-                        <!-- Vocational Club Dropdown -->
-                        <div>
-                            <label for="club-name" class="block text-sm font-medium text-slate-300 mb-2">
-                                <i class="fa-solid fa-users-gear text-brand-500 mr-1.5"></i> ชมรมวิชาชีพ
-                            </label>
-                            <div class="relative">
-                                <select 
-                                    id="club-name" 
-                                    required
-                                    class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition appearance-none text-base"
-                                >
-                                    <option value="" disabled selected>-- เลือกชมรมวิชาชีพ --</option>
-                                    <option value="ชมรมวิชาชีพช่างกลโรงงาน">ชมรมวิชาชีพช่างกลโรงงาน</option>
-                                    <option value="ชมรมวิชาชีพช่างยนต์">ชมรมวิชาชีพช่างยนต์</option>
-                                    <option value="ชมรมวิชาชีพช่างไฟฟ้าและเมคคาทรอนิกส์">ชมรมวิชาชีพช่างไฟฟ้าและเมคคาทรอนิกส์</option>
-                                    <option value="ชมรมวิชาชีพช่างอิเล็กทรอนิกส์">ชมรมวิชาชีพช่างอิเล็กทรอนิกส์</option>
-                                    <option value="ชมรมวิชาชีพช่างก่อสร้าง">ชมรมวิชาชีพช่างก่อสร้าง</option>
-                                    <option value="ชมรมวิชาชีพการบัญชี">ชมรมวิชาชีพการบัญชี</option>
-                                    <option value="ชมรมวิชาชีพเทคโนโลยีธุรกิจดิจิทัล">ชมรมวิชาชีพเทคโนโลยีธุรกิจดิจิทัล</option>
-                                    <option value="ชมรมวิชาชีพการโรงแรม">ชมรมวิชาชีพการโรงแรม</option>
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                                    <i class="fa-solid fa-chevron-down text-sm"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Alert Box for Error -->
-                        <div id="error-message" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm flex items-center gap-3">
-                            <i class="fa-solid fa-circle-exclamation text-lg flex-shrink-0"></i>
-                            <span id="error-text">ไม่พบข้อมูลเกียรติบัตร กรุณาตรวจสอบรหัสนักศึกษาและชมรมวิชาชีพอีกครั้ง</span>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button 
-                            type="submit" 
-                            class="w-full py-3.5 px-6 bg-gradient-to-r from-brand-600 to-blue-600 hover:from-brand-500 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-brand-600/30 hover:shadow-brand-500/50 transition-all duration-200 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-base"
-                        >
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <span>ค้นหาเกียรติบัตร</span>
-                        </button>
-                    </form>
-
-                    <!-- Quick Test Data Helper -->
-                    <div class="mt-6 pt-6 border-t border-slate-800 text-center">
-                        <p class="text-xs text-slate-400 mb-2">ทดลองใช้รหัสนักศึกษาตัวอย่าง:</p>
-                        <div class="flex flex-wrap justify-center gap-2">
-                            <button onclick="fillDemo('65301010001', 'ชมรมวิชาชีพเทคโนโลยีธุรกิจดิจิทัล')" class="text-xs bg-slate-800 hover:bg-slate-700 text-brand-400 px-2.5 py-1 rounded-md border border-slate-700 transition">
-                                65301010001 (เทคโนโลยีธุรกิจดิจิทัล)
-                            </button>
-                            <button onclick="fillDemo('65301020005', 'ชมรมวิชาชีพช่างยนต์')" class="text-xs bg-slate-800 hover:bg-slate-700 text-brand-400 px-2.5 py-1 rounded-md border border-slate-700 transition">
-                                65301020005 (ช่างยนต์)
-                            </button>
-                            <button onclick="fillDemo('65301030012', 'ชมรมวิชาชีพการบัญชี')" class="text-xs bg-slate-800 hover:bg-slate-700 text-brand-400 px-2.5 py-1 rounded-md border border-slate-700 transition">
-                                65301030012 (การบัญชี)
-                            </button>
-                        </div>
-                    </div>
+                <div>
+                    <label class="block text-sm mb-1 text-slate-300">เลือกชมรมวิชาชีพ</label>
+                    <select id="clubName" required class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-emerald-500">
+                        <option value="">-- เลือกชมรมวิชาชีพ --</option>
+                        <option value="ชมรมวิชาชีพช่างกลโรงงาน">ชมรมวิชาชีพช่างกลโรงงาน</option>
+                        <option value="ชมรมวิชาชีพช่างยนต์">ชมรมวิชาชีพช่างยนต์</option>
+                        <option value="ชมรมวิชาชีพช่างไฟฟ้าและเมคคาทรอนิกส์">ชมรมวิชาชีพช่างไฟฟ้าและเมคคาทรอนิกส์</option>
+                        <option value="ชมรมวิชาชีพช่างอิเล็กทรอนิกส์">ชมรมวิชาชีพช่างอิเล็กทรอนิกส์</option>
+                        <option value="ชมรมวิชาชีพช่างก่อสร้าง">ชมรมวิชาชีพช่างก่อสร้าง</option>
+                        <option value="ชมรมวิชาชีพการบัญชี">ชมรมวิชาชีพการบัญชี</option>
+                        <option value="ชมรมวิชาชีพเทคโนโลยีธุรกิจดิจิทัล">ชมรมวิชาชีพเทคโนโลยีธุรกิจดิจิทัล</option>
+                        <option value="ชมรมวิชาชีพการโรงแรม">ชมรมวิชาชีพการโรงแรม</option>
+                    </select>
                 </div>
+                <div id="errMsg" class="hidden text-red-400 text-sm text-center">ไม่พบข้อมูล! ตรวจสอบรหัสและชมรมอีกครั้ง</div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-3 rounded-xl shadow transition">ค้นหาเกียรติบัตร</button>
+            </form>
+        </div>
+
+        <div id="resultCard" class="hidden bg-slate-800 rounded-2xl p-6 border border-slate-700 text-center space-y-4">
+            <h3 class="text-xl font-bold text-emerald-400">พบข้อมูลเกียรติบัตร!</h3>
+            <p id="studentInfo" class="text-sm text-slate-300"></p>
+            <div class="flex justify-center"><canvas id="certCanvas" class="max-w-full rounded-lg border border-slate-600"></canvas></div>
+            <div class="flex justify-center gap-3">
+                <button onclick="downloadPNG()" class="bg-emerald-600 hover:bg-emerald-500 px-5 py-2.5 rounded-xl font-semibold"><i class="fa-solid fa-download mr-1"></i> ดาวน์โหลด (PNG)</button>
+                <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 px-5 py-2.5 rounded-xl">ค้นหาใหม่</button>
             </div>
-
-            <!-- STEP 2: Result & Certificate Download -->
-            <div id="step-2" class="hidden transition-all duration-300 space-y-6">
-                <!-- Top Actions Bar -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800 backdrop-blur-md">
-                    <button onclick="goToStep(1)" class="text-slate-300 hover:text-white px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition flex items-center gap-2 text-sm border border-slate-700">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span>กลับไปหน้าค้นหา</span>
-                    </button>
-                    
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        <button onclick="downloadAsImage()" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/20 transition font-medium text-sm flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-file-image"></i>
-                            <span>โหลดรูปภาพ (PNG)</span>
-                        </button>
-                        <button onclick="downloadAsPDF()" class="flex-1 sm:flex-none px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl shadow-lg shadow-brand-600/20 transition font-medium text-sm flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-file-pdf"></i>
-                            <span>โหลดไฟล์ (PDF)</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Found Student Info Banner -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-xl flex-shrink-0">
-                            <i class="fa-solid fa-circle-check"></i>
-                        </div>
-                        <div>
-                            <span class="text-xs text-slate-400 uppercase font-semibold tracking-wider">พบข้อมูลเกียรติบัตร</span>
-                            <h3 id="res-student-name" class="text-xl font-bold text-white">นายสมชาย เข็มกลัด</h3>
-                            <p id="res-student-detail" class="text-xs sm:text-sm text-slate-300">รหัส: 65301010001 | ชมรมวิชาชีพเทคโนโลยีธุรกิจดิจิทัล</p>
-                        </div>
-                    </div>
-                    <div class="text-left md:text-right border-t md:border-t-0 border-slate-800 pt-3 md:pt-0 w-full md:w-auto">
-                        <span class="text-xs text-slate-400 block">เลขที่เกียรติบัตร</span>
-                        <span id="res-cert-id" class="text-sm font-mono font-bold text-brand-400">CERT-2026-001</span>
-                    </div>
-                </div>
-
-                <!-- Canvas Certificate Preview Container -->
-                <div class="bg-slate-950 p-3 sm:p-6 rounded-2xl border border-slate-800 cert-canvas-container overflow-hidden flex flex-col items-center">
-                    <div class="w-full flex justify-between items-center mb-3 px-2">
-                        <span class="text-xs text-slate-400 flex items-center gap-1.5">
-                            <i class="fa-solid fa-eye text-brand-400"></i> ตัวอย่างเกียรติบัตร (Certificate Preview)
-                        </span>
-                        <span class="text-xs text-slate-500">ความละเอียดสูงพร้อมพิมพ์</span>
-                    </div>
-
-                    <!-- Canvas -->
-                    <div class="w-full overflow-x-auto flex justify-center bg-slate-900 rounded-lg p-2 border border-slate-800">
-                        <canvas id="cert-canvas" class="max-w-full h-auto rounded shadow-lg border border-slate-700"></canvas>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-        <div class="max-w-7xl mx-auto px-4">
-            <p>© 2026 ระบบออกเกียรติบัตรส่วนกลาง ชมรมวิชาชีพ สถาบันการอาชีวศึกษา</p>
-        </div>
-    </footer>
-
-    <!-- Admin / Data Management Modal Drawer -->
-    <div id="admin-drawer" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex justify-end transition-opacity">
-        <div class="w-full max-w-md bg-slate-900 h-full border-l border-slate-800 p-6 overflow-y-auto flex flex-col justify-between">
+    <div id="adminModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl p-6 max-w-md w-full border border-slate-700 space-y-4">
+            <h3 class="font-bold text-lg">อัปโหลดไฟล์ข้อมูล</h3>
             <div>
-                <div class="flex justify-between items-center pb-4 mb-6 border-b border-slate-800">
-                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-gear text-brand-500"></i>
-                        <span>จัดการข้อมูล & เทมเพลต</span>
-                    </h3>
-                    <button onclick="toggleAdminDrawer()" class="text-slate-400 hover:text-white p-2">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
-
-                <div class="space-y-6">
-                    <!-- Section 1: Template Upload -->
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                        <h4 class="text-sm font-semibold text-slate-200 mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-image text-brand-400"></i>
-                            <span>1. อัปโหลดรูปเทมเพลตเกียรติบัตร</span>
-                        </h4>
-                        <p class="text-xs text-slate-400 mb-3">อัปโหลดไฟล์รูปภาพเกียรติบัตรของคุณ (เช่น JPG/PNG ขนาด 1920x1080 หรือแนวนอน)</p>
-                        <input type="file" id="bg-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
-                        <label for="bg-upload" class="block w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 text-center rounded-lg cursor-pointer border border-dashed border-slate-600 hover:border-brand-500 text-xs transition">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1 text-sm"></i> เลือกรูปภาพเทมเพลตใหม่
-                        </label>
-                        <button onclick="resetDefaultTemplate()" class="w-full mt-2 text-xs text-slate-400 hover:text-slate-200 underline text-center block">
-                            คืนค่าเทมเพลตเริ่มต้น (Default Canvas)
-                        </button>
-                    </div>
-
-                    <!-- Section 2: CSV Data Upload -->
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                        <h4 class="text-sm font-semibold text-slate-200 mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-file-csv text-brand-400"></i>
-                            <span>2. อัปโหลดข้อมูลรายชื่อ (CSV / JSON)</span>
-                        </h4>
-                        <p class="text-xs text-slate-400 mb-2">รูปแบบ CSV: <code class="bg-slate-900 px-1 py-0.5 rounded text-brand-300">รหัสนักศึกษา, ชื่อ-นามสกุล, ชมรมวิชาชีพ, วันที่</code></p>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="file" id="csv-upload" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
-                            <label for="csv-upload" class="w-full py-2.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-center rounded-lg cursor-pointer border border-dashed border-slate-600 hover:border-brand-500 text-xs transition block">
-                                <i class="fa-solid fa-file-import mr-1"></i> เลือกไฟล์ CSV
-                            </label>
-                            <button onclick="exportDatabaseJSON()" class="w-full py-2.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-center rounded-lg border border-slate-700 hover:border-brand-500 text-xs transition">
-                                <i class="fa-solid fa-download mr-1"></i> สำรองไฟล์ JSON
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Section 3: Current Database List -->
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="text-sm font-semibold text-slate-200">รายชื่อในระบบปัจจุบัน (<span id="db-count">0</span> รายการ)</h4>
-                            <button onclick="resetDataToDefault()" class="text-xs text-red-400 hover:underline">รีเซ็ตข้อมูล</button>
-                        </div>
-                        <div id="db-list" class="bg-slate-950 rounded-xl border border-slate-800 p-3 max-h-56 overflow-y-auto space-y-2 text-xs">
-                            <!-- Items populated by JS -->
-                        </div>
-                    </div>
-                </div>
+                <label class="block text-xs mb-1">1. อัปโหลดรายชื่อ (.CSV)</label>
+                <input type="file" id="csvFile" accept=".csv" class="text-xs w-full">
             </div>
-
-            <div class="pt-4 border-t border-slate-800 text-center">
-                <p class="text-xs text-slate-500">ระบบนี้ประมวลผลข้อมูลในเครื่อง Client-side ทั้งหมด ปลอดภัย 100%</p>
+            <div>
+                <label class="block text-xs mb-1">2. อัปโหลดภาพเกียรติบัตร (.PNG/.JPG)</label>
+                <input type="file" id="bgFile" accept="image/*" class="text-xs w-full">
             </div>
+            <button onclick="document.getElementById('adminModal').classList.add('hidden')" class="w-full bg-slate-700 py-2 rounded-xl text-sm">ปิด</button>
         </div>
     </div>
 
-    <!-- JavaScript Application Logic -->
     <script>
-        // ==========================================
-        // Mock Student Data Initialization
-        // ==========================================
-        const defaultStudents = [
-            { id: "65301010001", name: "นายสมชาย เข็มกลัด", club: "ชมรมวิชาชีพเทคโนโลยีธุรกิจดิจิทัล", certId: "CERT-2026-001", date: "25 กุมภาพันธ์ 2569" },
-            { id: "65301010002", name: "นางสาววิภาวี รักดี", club: "ชมรมวิชาชีพเทคโนโลยีธุรกิจดิจิทัล", certId: "CERT-2026-002", date: "25 กุมภาพันธ์ 2569" },
-            { id: "65301020005", name: "นายชาญชัย มั่นคง", club: "ชมรมวิชาชีพช่างยนต์", certId: "CERT-2026-003", date: "25 กุมภาพันธ์ 2569" },
-            { id: "65301030012", name: "นางสาวศิริพร บุญมี", club: "ชมรมวิชาชีพการบัญชี", certId: "CERT-2026-004", date: "25 กุมภาพันธ์ 2569" },
-            { id: "65301040008", name: "นายอนุชา ใจดี", club: "ชมรมวิชาชีพช่างไฟฟ้าและเมคคาทรอนิกส์", certId: "CERT-2026-005", date: "25 กุมภาพันธ์ 2569" },
-            { id: "65301050015", name: "นายธีรภัทร์ สุขสว่าง", club: "ชมรมวิชาชีพช่างกลโรงงาน", certId: "CERT-2026-006", date: "25 กุมภาพันธ์ 2569" },
-            { id: "65301060020", name: "นางสาวกนกวรรณ วงศ์สว่าง", club: "ชมรมวิชาชีพการโรงแรม", certId: "CERT-2026-007", date: "25 กุมภาพันธ์ 2569" }
+        let db = [
+            { id: "65301010001", name: "นายสมชาย เข็มกลัด", club: "ชมรมวิชาชีพเทคโนโลยีธุรกิจดิจิทัล" },
+            { id: "65301020005", name: "นายชาญชัย มั่นคง", club: "ชมรมวิชาชีพช่างยนต์" },
+            { id: "65301030012", name: "นางสาววิภาดา ใจดี", club: "ชมรมวิชาชีพการบัญชี" }
         ];
+        let bgImg = new Image(), currentStudent = null;
 
-        let studentDatabase = [];
-        let customTemplateImage = null;
-        let currentFoundStudent = null;
-
-        // Share Link Functionality
-        function copyShareLink() {
-            const currentUrl = window.location.href.split('?')[0];
-            const dummy = document.createElement('input');
-            document.body.appendChild(dummy);
-            dummy.value = currentUrl;
-            dummy.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummy);
-
-            alert('คัดลอกลิงก์สำหรับแชร์ระบบเรียบร้อยแล้ว! สามารถนำลิงก์นี้ไปส่งต่อให้นักเรียน/นักศึกษาใช้งานได้ทันที');
+        function initCanvas() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200; canvas.height = 850;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,1200,850);
+            ctx.strokeStyle = "#059669"; ctx.lineWidth = 15; ctx.strokeRect(30,30,1140,790);
+            ctx.fillStyle = "#065f46"; ctx.font = "bold 42px Sarabun"; ctx.textAlign = "center";
+            ctx.fillText("เกียรติบัตรฉบับนี้ให้ไว้เพื่อแสดงว่า", 600, 220);
+            bgImg.src = canvas.toDataURL();
         }
+        window.onload = initCanvas;
 
-        // Export Database JSON for Cloud Backup
-        function exportDatabaseJSON() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(studentDatabase, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `student_certificates_backup_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
+        document.getElementById('csvFile').addEventListener('change', e => {
+            const reader = new FileReader();
+            reader.onload = evt => {
+                const lines = evt.target.result.split('\n');
+                let newDb = [];
+                lines.forEach(l => {
+                    const c = l.split(',').map(s=>s.trim());
+                    if(c.length >= 3 && c[0] !== "รหัสนักศึกษา") newDb.push({ id: c[0], name: c[1], club: c[2] });
+                });
+                if(newDb.length) { db = newDb; alert('นำเข้าข้อมูลสำเร็จ ' + newDb.length + ' รายการ'); }
+            };
+            reader.readAsText(e.target.files[0]);
+        });
 
-        // Load Initial Data
-        window.onload = function() {
-            const savedData = localStorage.getItem('cert_students');
-            if (savedData) {
-                try {
-                    studentDatabase = JSON.parse(savedData);
-                } catch(e) {
-                    studentDatabase = [...defaultStudents];
-                }
-            } else {
-                studentDatabase = [...defaultStudents];
-            }
-            updateAdminDbList();
-        };
+        document.getElementById('bgFile').addEventListener('change', e => {
+            const reader = new FileReader();
+            reader.onload = evt => {
+                bgImg = new Image();
+                bgImg.onload = () => alert('อัปโหลดรูปเทมเพลตสำเร็จ');
+                bgImg.src = evt.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        });
 
-        // UI View Switcher
-        function goToStep(step) {
-            const s1 = document.getElementById('step-1');
-            const s2 = document.getElementById('step-2');
-            if (step === 1) {
-                s1.classList.remove('hidden');
-                s2.classList.add('hidden');
-                document.getElementById('error-message').classList.add('hidden');
-            } else {
-                s1.classList.add('hidden');
-                s2.classList.remove('hidden');
-            }
-        }
-
-        // Demo Data Fill Helper
-        function fillDemo(id, club) {
-            document.getElementById('student-id').value = id;
-            document.getElementById('club-name').value = club;
-        }
-
-        // Search Form Submission Handler
         function handleSearch(e) {
             e.preventDefault();
-            const inputId = document.getElementById('student-id').value.trim();
-            const selectedClub = document.getElementById('club-name').value;
-            const errorBox = document.getElementById('error-message');
-
-            // Verification Check
-            const found = studentDatabase.find(student => 
-                student.id === inputId && student.club === selectedClub
-            );
-
+            const id = document.getElementById('studentId').value.trim();
+            const club = document.getElementById('clubName').value.trim();
+            const found = db.find(s => s.id === id && s.club === club);
             if (found) {
-                errorBox.classList.add('hidden');
-                currentFoundStudent = found;
-                
-                // Update Step 2 Info
-                document.getElementById('res-student-name').innerText = found.name;
-                document.getElementById('res-student-detail').innerText = `รหัส: ${found.id} | ${found.club}`;
-                document.getElementById('res-cert-id').innerText = found.certId;
-
-                // Render Canvas Certificate
-                renderCertificate(found);
-
-                // Switch to Step 2
-                goToStep(2);
+                currentStudent = found;
+                document.getElementById('searchCard').classList.add('hidden');
+                document.getElementById('resultCard').classList.remove('hidden');
+                document.getElementById('studentInfo').innerText = `รหัส: ${found.id} | ${found.name} | ${found.club}`;
+                renderCert(found);
             } else {
-                errorBox.classList.remove('hidden');
+                document.getElementById('errMsg').classList.remove('hidden');
             }
         }
 
-        // Dynamic Canvas Certificate Rendering Engine
-        function renderCertificate(student) {
-            const canvas = document.getElementById('cert-canvas');
-            const ctx = canvas.getContext('2d');
-
-            // Standard Certificate High-Res Dimensions (A4 Landscape aspect ratio)
-            canvas.width = 1920;
-            canvas.height = 1080;
-
-            if (customTemplateImage) {
-                // Render with User Uploaded Background Image Template
-                ctx.drawImage(customTemplateImage, 0, 0, canvas.width, canvas.height);
-                drawOverlayText(ctx, student, false);
-            } else {
-                // Render Default Professional Vector Certificate Template
-                drawDefaultBackground(ctx, canvas.width, canvas.height);
-                drawOverlayText(ctx, student, true);
-            }
+        function renderCert(s) {
+            const cv = document.getElementById('certCanvas');
+            const ctx = cv.getContext('2d');
+            cv.width = bgImg.width || 1200; cv.height = bgImg.height || 850;
+            ctx.drawImage(bgImg, 0, 0, cv.width, cv.height);
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#1e293b"; ctx.font = "bold 48px Sarabun";
+            ctx.fillText(s.name, cv.width/2, cv.height/2 - 20);
+            ctx.fillStyle = "#334155"; ctx.font = "30px Sarabun";
+            ctx.fillText(`ได้เข้าร่วมการฝึกอบรมพัฒนาทักษะวิชาชีพ`, cv.width/2, cv.height/2 + 50);
+            ctx.fillText(`สังกัด ${s.club}`, cv.width/2, cv.height/2 + 100);
         }
 
-        // Draw Default Procedural Background
-        function drawDefaultBackground(ctx, width, height) {
-            // Background Base
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, width, height);
-
-            // Elegant Borders
-            // Outer Dark Navy Border
-            ctx.strokeStyle = '#0f172a';
-            ctx.lineWidth = 24;
-            ctx.strokeRect(30, 30, width - 60, height - 60);
-
-            // Inner Gold Border
-            ctx.strokeStyle = '#d97706';
-            ctx.lineWidth = 6;
-            ctx.strokeRect(55, 55, width - 110, height - 110);
-
-            // Corner Decorative Accents (Gold Triangles/Lines)
-            const cornerSize = 120;
-            // Top-Left
-            ctx.fillStyle = '#1e3a8a';
-            ctx.beginPath();
-            ctx.moveTo(60, 60);
-            ctx.lineTo(60 + cornerSize, 60);
-            ctx.lineTo(60, 60 + cornerSize);
-            ctx.fill();
-
-            // Bottom-Right
-            ctx.beginPath();
-            ctx.moveTo(width - 60, height - 60);
-            ctx.lineTo(width - 60 - cornerSize, height - 60);
-            ctx.lineTo(width - 60, height - 60 - cornerSize);
-            ctx.fill();
-
-            // Watermark Logo / Emblem Simulation in Header
-            ctx.beginPath();
-            ctx.arc(width / 2, 170, 50, 0, Math.PI * 2);
-            ctx.fillStyle = '#eff6ff';
-            ctx.fill();
-            ctx.strokeStyle = '#2563eb';
-            ctx.lineWidth = 4;
-            ctx.stroke();
-
-            // Award Icon Symbol inside emblem
-            ctx.fillStyle = '#2563eb';
-            ctx.font = 'bold 40px FontAwesome, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('★', width / 2, 170);
-        }
-
-        // Draw Text Overlay onto Canvas
-        function drawOverlayText(ctx, student, isDefaultBg) {
-            const width = ctx.canvas.width;
-
-            // Text Styles
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'alphabetic';
-
-            if (isDefaultBg) {
-                // Header Titles
-                ctx.fillStyle = '#1e293b';
-                ctx.font = 'bold 36px Sarabun, sans-serif';
-                ctx.fillText('สถาบันการอาชีวศึกษา และ คณะกรรมการดำเนินงาน', width / 2, 270);
-
-                ctx.fillStyle = '#475569';
-                ctx.font = '400 26px Sarabun, sans-serif';
-                ctx.fillText('ขอมอบเกียรติบัตรฉบับนี้ไว้เพื่อแสดงว่า', width / 2, 330);
-
-                // Student Name (Main Highlight)
-                ctx.fillStyle = '#1e3a8a';
-                ctx.font = 'bold 64px Sarabun, sans-serif';
-                ctx.fillText(student.name, width / 2, 440);
-
-                // Underline Name
-                ctx.strokeStyle = '#cbd5e1';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(width / 2 - 300, 470);
-                ctx.lineTo(width / 2 + 300, 470);
-                ctx.stroke();
-
-                // Description Paragraph
-                ctx.fillStyle = '#334155';
-                ctx.font = '400 28px Sarabun, sans-serif';
-                ctx.fillText(`ได้ผ่านการเข้าร่วมโครงการพัฒนาทักษะวิชาชีพ ประจำปีการศึกษา ๒๕๖๙`, width / 2, 540);
-                
-                ctx.fillStyle = '#2563eb';
-                ctx.font = 'bold 34px Sarabun, sans-serif';
-                ctx.fillText(`สังกัด ${student.club}`, width / 2, 600);
-
-                ctx.fillStyle = '#475569';
-                ctx.font = '400 24px Sarabun, sans-serif';
-                ctx.fillText('ขอให้มีความสุข ความเจริญ และประสบความสำเร็จในวิชาชีพต่อไป', width / 2, 660);
-
-                // Issue Date & Certificate ID
-                ctx.fillStyle = '#64748b';
-                ctx.font = '400 22px Sarabun, sans-serif';
-                ctx.fillText(`ให้ไว้ ณ วันที่ ${student.date || '25 กุมภาพันธ์ 2569'}`, width / 2, 740);
-
-                // Signatures Simulation Section
-                const sigY = 880;
-                // Signature 1
-                ctx.strokeStyle = '#0f172a';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(width / 2 - 400, sigY - 40);
-                ctx.quadraticCurveTo(width / 2 - 350, sigY - 80, width / 2 - 300, sigY - 40);
-                ctx.stroke();
-
-                ctx.fillStyle = '#334155';
-                ctx.font = '22px Sarabun, sans-serif';
-                ctx.fillText('(นายประธาน ดำเนินงาน)', width / 2 - 350, sigY);
-                ctx.font = '18px Sarabun, sans-serif';
-                ctx.fillStyle = '#64748b';
-                ctx.fillText('ประธานคณะกรรมการจัดงาน', width / 2 - 350, sigY + 30);
-
-                // Signature 2
-                ctx.strokeStyle = '#0f172a';
-                ctx.beginPath();
-                ctx.moveTo(width / 2 + 300, sigY - 40);
-                ctx.quadraticCurveTo(width / 2 + 350, sigY - 80, width / 2 + 400, sigY - 40);
-                ctx.stroke();
-
-                ctx.fillStyle = '#334155';
-                ctx.font = '22px Sarabun, sans-serif';
-                ctx.fillText('(ผู้อำนวยการ สถาบันการอาชีวศึกษา)', width / 2 + 350, sigY);
-                ctx.font = '18px Sarabun, sans-serif';
-                ctx.fillStyle = '#64748b';
-                ctx.fillText('ผู้อำนวยการสถาบัน', width / 2 + 350, sigY + 30);
-
-                // Footer Cert ID Code
-                ctx.textAlign = 'left';
-                ctx.font = '16px monospace';
-                ctx.fillStyle = '#94a3b8';
-                ctx.fillText(`รหัสอ้างอิง: ${student.certId}`, 70, height - 70);
-            } else {
-                // If custom image is used, render text with optimized position
-                ctx.fillStyle = '#1e3a8a';
-                ctx.font = 'bold 64px Sarabun, sans-serif';
-                ctx.fillText(student.name, width / 2, height * 0.45);
-
-                ctx.fillStyle = '#2563eb';
-                ctx.font = 'bold 36px Sarabun, sans-serif';
-                ctx.fillText(student.club, width / 2, height * 0.58);
-
-                ctx.fillStyle = '#475569';
-                ctx.font = '22px Sarabun, sans-serif';
-                ctx.fillText(`รหัสนักศึกษา: ${student.id} | เลขที่: ${student.certId}`, width / 2, height * 0.65);
-            }
-        }
-
-        // Download Functions
-        function downloadAsImage() {
-            const canvas = document.getElementById('cert-canvas');
-            if (!currentFoundStudent) return;
-
-            const imageURI = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.download = `Certificate_${currentFoundStudent.id}_${currentFoundStudent.name}.png`;
-            link.href = imageURI;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function downloadAsPDF() {
-            const canvas = document.getElementById('cert-canvas');
-            if (!currentFoundStudent) return;
-
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
-            const { jsPDF } = window.jspdf;
-            
-            // Create A4 Landscape PDF
-            const pdf = new jsPDF({
-                orientation: 'landscape',
-                unit: 'mm',
-                format: 'a4'
-            });
-
-            const width = pdf.internal.pageSize.getWidth();
-            const height = pdf.internal.pageSize.getHeight();
-
-            pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
-            pdf.save(`Certificate_${currentFoundStudent.id}_${currentFoundStudent.name}.pdf`);
-        }
-
-        // ==========================================
-        // Admin Drawer & Data Management
-        // ==========================================
-        function toggleAdminDrawer() {
-            const drawer = document.getElementById('admin-drawer');
-            drawer.classList.toggle('hidden');
-        }
-
-        function handleImageUpload(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.onload = function() {
-                        customTemplateImage = img;
-                        alert('อัปโหลดภาพเทมเพลตเรียบร้อยแล้ว');
-                        if (currentFoundStudent) {
-                            renderCertificate(currentFoundStudent);
-                        }
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function resetDefaultTemplate() {
-            customTemplateImage = null;
-            if (currentFoundStudent) {
-                renderCertificate(currentFoundStudent);
-            }
-            alert('เปลี่ยนกลับเป็นเทมเพลตเริ่มต้นเรียบร้อยแล้ว');
-        }
-
-        function handleCSVUpload(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const text = event.target.result;
-                    const lines = text.split('\n');
-                    const parsedData = [];
-
-                    lines.forEach((line, index) => {
-                        const cols = line.split(',').map(c => c.trim());
-                        if (cols.length >= 3 && cols[0] !== '') {
-                            parsedData.push({
-                                id: cols[0],
-                                name: cols[1],
-                                club: cols[2],
-                                date: cols[3] || '25 กุมภาพันธ์ 2569',
-                                certId: `CERT-2026-${String(index + 1).padStart(3, '0')}`
-                            });
-                        }
-                    });
-
-                    if (parsedData.length > 0) {
-                        studentDatabase = parsedData;
-                        localStorage.setItem('cert_students', JSON.stringify(studentDatabase));
-                        updateAdminDbList();
-                        alert(`นำเข้าข้อมูลสำเร็จจำนวน ${parsedData.length} รายการ`);
-                    } else {
-                        alert('ไม่พบข้อมูลที่ถูกต้องในไฟล์ CSV');
-                    }
-                };
-                reader.readAsText(file, 'UTF-8');
-            }
-        }
-
-        function updateAdminDbList() {
-            const listContainer = document.getElementById('db-list');
-            const countSpan = document.getElementById('db-count');
-            countSpan.innerText = studentDatabase.length;
-
-            listContainer.innerHTML = '';
-            studentDatabase.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'bg-slate-900 p-2 rounded border border-slate-800 flex justify-between items-center';
-                div.innerHTML = `
-                    <div>
-                        <span class="font-bold text-white block">${item.name} (${item.id})</span>
-                        <span class="text-slate-400 text-[10px]">${item.club}</span>
-                    </div>
-                    <span class="text-[10px] bg-brand-900 text-brand-300 px-1.5 py-0.5 rounded font-mono">${item.certId}</span>
-                `;
-                listContainer.appendChild(div);
-            });
-        }
-
-        function resetDataToDefault() {
-            if (confirm('คุณต้องการรีเซ็ตข้อมูลรายชื่อกลับเป็นค่าเริ่มต้นหรือไม่?')) {
-                studentDatabase = [...defaultStudents];
-                localStorage.removeItem('cert_students');
-                updateAdminDbList();
-            }
+        function downloadPNG() {
+            const a = document.createElement('a');
+            a.download = `เกียรติบัตร_${currentStudent.id}.png`;
+            a.href = document.getElementById('certCanvas').toDataURL();
+            a.click();
         }
     </script>
 </body>
